@@ -1,0 +1,5 @@
+.gradle/
+LaserMachines.i*
+eclipse/
+gradle/
+gradlew*

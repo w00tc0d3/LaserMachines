@@ -3,9 +3,10 @@ package com.netchip.LaserMachines.tiles;
 import cofh.api.energy.EnergyStorage;
 import com.netchip.LaserMachines.api.ILaserTile;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 
-public class TileLaserPowered extends TileBase implements ILaserTile {
-    EnergyStorage es = null;
+public abstract class TileLaserPowered extends AbstractTileBase implements ILaserTile {
+    public EnergyStorage es = null;
 
     public TileLaserPowered(String invName, int slots, int maxRFStorage) {
         super(invName, slots);
@@ -13,32 +14,45 @@ public class TileLaserPowered extends TileBase implements ILaserTile {
     }
 
     @Override
-    public int[] getAccessibleSlotsFromSide(int p_94128_1_) {
-        return new int[0];
+    public void updateEntity() {
+        super.updateEntity();
+        if(getDrainTick() == 0)
+            return;
+        if (es.getEnergyStored() < getDrainTick())
+            return;
+        es.extractEnergy(getDrainTick(), false);
+        doWork();
     }
 
     @Override
-    public boolean canInsertItem(int p_102007_1_, ItemStack p_102007_2_, int p_102007_3_) {
-        return false;
+    public void writeToNBT(NBTTagCompound tag) {
+        super.writeToNBT(tag);
+        es.writeToNBT(tag);
     }
 
     @Override
-    public boolean canExtractItem(int p_102008_1_, ItemStack p_102008_2_, int p_102008_3_) {
-        return false;
+    public void readFromNBT(NBTTagCompound tag) {
+        super.readFromNBT(tag);
+        es.readFromNBT(tag);
     }
 
-    @Override
-    public boolean isItemValidForSlot(int p_94041_1_, ItemStack p_94041_2_) {
-        return false;
-    }
+    protected abstract void doWork();
+    protected abstract int getDrainTick();
+
+    public abstract int[] getAccessibleSlotsFromSide(int p_94128_1_);
+    public abstract boolean canInsertItem(int p_102007_1_, ItemStack p_102007_2_, int p_102007_3_);
+    public abstract boolean canExtractItem(int p_102008_1_, ItemStack p_102008_2_, int p_102008_3_);
+    public abstract boolean isItemValidForSlot(int p_94041_1_, ItemStack p_94041_2_);
 
     @Override
     public boolean needsPower() {
-        return es.getEnergyStored() != es.getMaxEnergyStored();
+        return true;
     }
 
     @Override
-    public float transferPower(int amountPower) {
-        return amountPower - es.receiveEnergy(amountPower, false);
+    public abstract int transferPower(int amountPower);
+
+    protected EnergyStorage getEnergyStorage() {
+        return es;
     }
 }

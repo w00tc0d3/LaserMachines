@@ -3,3 +3,4 @@ LaserMachines.i*
 eclipse/
 gradle/
 gradlew*
+out/

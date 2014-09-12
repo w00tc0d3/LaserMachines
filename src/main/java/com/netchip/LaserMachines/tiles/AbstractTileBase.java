@@ -3,13 +3,17 @@ package com.netchip.LaserMachines.tiles;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.Packet;
+import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 
-public abstract class TileBase extends TileEntity implements ISidedInventory {
+public abstract class AbstractTileBase extends TileEntity implements ISidedInventory {
     private ItemStack[] is = null;
     private String invName = null;
 
-    public TileBase(String invName, int slots) {
+    public AbstractTileBase(String invName, int slots) {
         this.invName = invName;
         is = new ItemStack[slots];
     }
@@ -18,6 +22,18 @@ public abstract class TileBase extends TileEntity implements ISidedInventory {
     public abstract boolean canInsertItem(int p_102007_1_, ItemStack p_102007_2_, int p_102007_3_);
     public abstract boolean canExtractItem(int p_102008_1_, ItemStack p_102008_2_, int p_102008_3_);
     public abstract boolean isItemValidForSlot(int p_94041_1_, ItemStack p_94041_2_);
+
+    @Override
+    public Packet getDescriptionPacket() {
+        NBTTagCompound tag = new NBTTagCompound();
+        writeToNBT(tag);
+        return new S35PacketUpdateTileEntity(xCoord, yCoord, zCoord, 3, tag);
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, S35PacketUpdateTileEntity pkt) {
+        readFromNBT(pkt.func_148857_g());
+    }
 
     @Override
     public int getSizeInventory() {
@@ -88,3 +104,4 @@ public abstract class TileBase extends TileEntity implements ISidedInventory {
 
     }
 }
+
